@@ -21,6 +21,8 @@ CHUNK_SIZE = 1024
 FORMAT = pyaudio.paInt16
 RATE = 16000
 
+startTime = 0
+
 def is_silent(snd_data):
     "Returns 'True' if below the 'silent' threshold"
     return max(snd_data) < THRESHOLD
@@ -102,6 +104,9 @@ def record():
             snd_started = True
 
         if snd_started and num_silent > 30:
+            global startTime 
+            startTime = int(round(time.time() * 1000))
+            print("Started speaking at:", startTime)
             break
 
     sample_width = p.get_sample_size(FORMAT)
@@ -137,22 +142,23 @@ def decode_audio(audio_input, sample_rate):
     transcription = processor.decode(predicted_ids[0])
     return transcription
 
+
 def decode_file(path):
-    startTime = int(round(time.time() * 1000))
-    print("Starting at:", startTime)
     # load audio
     audio_input, sample_rate = sf.read(path)
     # decode audio
     transcription = decode_audio(audio_input, sample_rate)
     # print transcription
     print("Transcription:", transcription)
-    endTime = int(round(time.time() * 1000))
-    print("Ending at:", endTime)
-    #print the time it took to run the action
-    print("Time elapsed:", endTime - startTime)
+
 
 if __name__ == '__main__':
     while True:
         print("please speak a word into the microphone")
         record_to_file('demo.wav')
         print("done - result written to demo.wav")
+        endTime = int(round(time.time() * 1000))
+        print("Ending at:", endTime)
+        #print the time it took to run the action
+        print(startTime)
+        print("Time elapsed:", endTime - startTime)
